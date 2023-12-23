@@ -41,6 +41,7 @@ namespace uScript_EventsFixer
         }
     }
     
+    
     [ScriptEvent("onPlayerEquipped", "player, item, *cancel")]
     public class ItemEquipped : ScriptEvent
     {
