@@ -21,7 +21,7 @@ namespace uScript_EventsFixer
         public override EventInfo EventHook(out object instance)
         {
             instance = null;
-            return typeof(EventsPatches).GetEvent("OnExperienceUpdatedFixed", BindingFlags.Public | BindingFlags.Static);
+            return typeof(ModuleEvents).GetEvent("OnExperienceUpdatedFixed", BindingFlags.Public | BindingFlags.Static);
         }
     
         [ScriptEventSubscription]
@@ -41,14 +41,13 @@ namespace uScript_EventsFixer
         }
     }
     
-    
     [ScriptEvent("onPlayerEquipped", "player, item, *cancel")]
     public class ItemEquipped : ScriptEvent
     {
         public override EventInfo EventHook(out object instance)
         {
             instance = null;
-            return typeof(EventsPatches).GetEvent("OnPlayerEquippedFixed", BindingFlags.Public | BindingFlags.Static);
+            return typeof(ModuleEvents).GetEvent("OnPlayerEquippedFixed", BindingFlags.Public | BindingFlags.Static);
         }
     
         [ScriptEventSubscription]
@@ -66,49 +65,100 @@ namespace uScript_EventsFixer
         }
     }
     
-    [ScriptEvent("onPlayerStanceUpdated", "player, *stance, *cancel")]
-    public class OnPlayerStanceUpdatedFixed : ScriptEvent
+    [ScriptEvent("onPlayerStanceUpdated", "player, stance")]
+    public class onPlayerStanceUpdated : ScriptEvent
     {
         public override EventInfo EventHook(out object instance)
         {
             instance = null;
-            return typeof(EventsPatches).GetEvent("onPlayerStanceUpdatedFixed", BindingFlags.Public | BindingFlags.Static);
+            return typeof(ModuleEvents).GetEvent("OnPlayerStanceUpdatedFixed", BindingFlags.Public | BindingFlags.Static);
         }
     
         [ScriptEventSubscription]
-        public void OnItemEquipped(Player player, ref EPlayerStance newStance, ref bool shouldAllow)
+        public void PlayerStanceUpdated(Player player, EPlayerStance newStance)
         {
             var args = new ExpressionValue[]
             {
                 ExpressionValue.CreateObject(new PlayerClass(player)),
-                newStance.ToString(),
-                shouldAllow
+                newStance.ToString()
             };
             
             RunEvent(this, args);
-            shouldAllow = args[2];
-            Enum.TryParse(args[1], out newStance);
         }
     }
+    
 
     public class ModuleEvents : ScriptModuleBase
     {
-        private Harmony _harmony;
+
+        
+        [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askSpend))]
+        [HarmonyPrefix]
+        public static bool AskSpend(PlayerSkills __instance, ref uint cost)
+        {
+            var shouldAllow = false;
+            OnExperienceUpdatedFixed?.Invoke(__instance.player, ref cost, false ,ref shouldAllow);
+            return !shouldAllow;
+        }
+            
+        [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askAward))]
+        [HarmonyPrefix]
+        public static bool AskAward(PlayerSkills __instance, ref uint award)
+        {
+            var shouldAllow = false;
+            OnExperienceUpdatedFixed?.Invoke(__instance.player, ref award, true , ref shouldAllow);
+            return !shouldAllow;
+        }
+        
+        [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
+        [HarmonyPrefix]
+        public static bool ServerEquip(PlayerEquipment __instance, byte page, byte x, byte y)
+        {
+            var shouldAllow = false;
+                
+            ItemJar jar = __instance.player.inventory.getItem(page, __instance.player.inventory.getIndex(page, x, y));
+                
+            OnPlayerEquippedFixed?.Invoke(__instance.player, jar, ref shouldAllow);
+            return !shouldAllow;
+        }
+    
+        [HarmonyPatch(typeof(PlayerStance), nameof(PlayerStance.checkStance))]
+        [HarmonyPrefix]
+        public static bool CheckStance(PlayerStance __instance, EPlayerStance newStance)
+        {
+            var shouldAllow = true;
+            OnPlayerStanceUpdatedFixed?.Invoke(__instance.player, newStance);
+            return shouldAllow;
+        }
+        
+        public delegate void ExpUpdated(Player player, ref uint cost, bool isPositive , ref bool shouldAllow);
+        public static event ExpUpdated OnExperienceUpdatedFixed;
+        
+        public delegate void ItemEquipped(Player player, ItemJar item, ref bool shouldAllow);
+        public static event ItemEquipped OnPlayerEquippedFixed;
+
+        public delegate void StanceUpdated(Player player, EPlayerStance newStance);
+        public static event StanceUpdated OnPlayerStanceUpdatedFixed;
+
+        
+        public Harmony _harmony;
         protected override void OnModuleLoaded()
         {
             Patching();
         }
-
-        void Patching()
+        
+        public void Patching()
         {            
             _harmony = new Harmony("PingFix");
             MethodInfo transpilerMethod = new Func<IEnumerable<CodeInstruction>, IEnumerable<CodeInstruction>>(Transpiler).Method;
             _harmony.Patch(typeof(uScript.Module.Main.PlayerEvents).GetMethod("Awake",
                 BindingFlags.Instance | BindingFlags.NonPublic), transpiler: new HarmonyMethod(transpilerMethod));
             IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> old) => new CodeInstruction[] { new CodeInstruction(OpCodes.Ret) }.Concat(old);
-            Debug.Log("uScript bugged events are successfully fixed!");
+            Debug.LogWarning("uScript bugged events are successfully fixed!");
             _harmony.PatchAll();
         }
+        
+        
         
     }
     
