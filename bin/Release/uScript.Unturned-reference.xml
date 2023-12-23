@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>uScript.Unturned</name>
+    </assembly>
+    <members>
+        <member name="M:uScript.Unturned.ScriptEvent.EventHook(System.Object@)">
+            <summary>
+            Indicates the event info to hook to when a script using this event is loaded.
+            Instance should be set to null if the event is static.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:uScript.Unturned.ScriptEvent.RunEvent(uScript.Unturned.ScriptEvent,uScript.Core.ExpressionValue[])">
+            <summary>
+            Calling this will invoke the related events in each script.
+            Note: args will be updated accordingly after this is run (useful for reference arguments).
+            </summary>
+            <param name="scriptEvent">Pass the ScriptEvent (this).</param>
+            <param name="args">The arguments that will be processed for each script event.</param>
+        </member>
+        <member name="T:uScript.Unturned.ScriptModuleBase">
+            <summary>
+            Should only be inherited by a single class in your entire module.
+            </summary>
+        </member>
+        <member name="M:uScript.Unturned.ScriptModuleBase.OnModuleLoaded">
+            <summary>
+            This method is called as soon as the module assembly is loaded.
+            You can use this method to implement custom events or any other
+            kind of preprocessing.
+            </summary>
+        </member>
+    </members>
+</doc>

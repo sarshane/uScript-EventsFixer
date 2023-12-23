@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>uScript.API</name>
+    </assembly>
+    <members>
+        <member name="T:uScript.API.Attributes.ScriptClassAttribute">
+            <summary>
+            Attribute used for to mark an instantiatable class for use within scripts.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptClassAttribute.AllowReturn">
+            <summary>
+            Allows the type to be used as a return value from other functions.
+            </summary>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptConstructorAttribute">
+            <summary>
+            Attribute used for indexing script constructors of a module or class.
+            </summary>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptEventAttribute">
+            <summary>
+            Attribute used for to mark a class as an event.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptEventAttribute.Name">
+            <summary>
+            The name of the event.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptEventAttribute.EventArgs">
+            <summary>
+            The argument syntax of the event (used in documentation generation).
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptEventAttribute.#ctor(System.String,System.String)">
+            <summary>
+            Constructor used in attribute.
+            </summary>
+            <param name="name">The name of the event.</param>
+            <param name="eventArgs">The argument syntax of the event (used in documentation generation).</param>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptEventSubscriptionAttribute">
+            <summary>
+            Attribute used for to mark a method that will be subscribed to an event.
+            </summary>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptFunctionAttribute">
+            <summary>
+            Attribute used for indexing script functions of a module or class.
+            Leaving the name empty will default to storing the function as a camelCase version of the function name.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptFunctionAttribute.Name">
+            <summary>
+            The name override for the script function.
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptFunctionAttribute.#ctor(System.String)">
+            <summary>
+            Constructor used in attribute.
+            </summary>
+            <param name="name">The name override for the script function. Default is the method name in camelCase.</param>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptGlobalAttribute">
+            <summary>
+            Attribute used for to mark a class's functions as global.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptGlobalAttribute.Name">
+            <summary>
+            Currently, this isn't being used for anything.
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptGlobalAttribute.#ctor(System.String)">
+            <summary>
+            Constructor used in attribute.
+            </summary>
+            <param name="name">Currently, this isn't being used for anything.</param>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptInstanceAttribute">
+            <summary>
+            Used for invoking a static function with a script instance.
+            This is required in order to use type extensions on classes, as they have instances.
+            </summary>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptModuleAttribute">
+            <summary>
+            Attribute used to mark a class and its members for static use within scripts.
+            These functions can be accessed directly through yourModuleName.yourFunctionName() in uScript.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptModuleAttribute.Name">
+            <summary>
+            The name override for the script module.
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptModuleAttribute.#ctor(System.String)">
+            <summary>
+            The constructor used in attribute.
+            </summary>
+            <param name="name">The name override for the script module. Default is the class name.</param>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptPropertyAttribute">
+            <summary>
+            Attribute used for indexing script properties of a module or class.
+            Leaving the name empty will default to storing the property as a camelCase version of the property name.
+            Note: uScript will create the respective script functions get_propertyName() and set_propertyName(value) for each defined property.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptPropertyAttribute.Name">
+            <summary>
+            The name overrider for the script property.
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Constructor used in attribute.
+            </summary>
+            <param name="name">The name override for the script property. Default is the method name in camelCase.</param>
+        </member>
+        <member name="T:uScript.API.Attributes.ScriptTypeExtensionAttribute">
+            <summary>
+            Attribute used for to mark a class as an extension to a script type defined in a separate module.
+            Only supports functions at the moment, but properties can be implemented by creating two script functions prefixed with get_ and set_.
+            </summary>
+        </member>
+        <member name="P:uScript.API.Attributes.ScriptTypeExtensionAttribute.ExtendedType">
+            <summary>
+            The extended type.
+            </summary>
+        </member>
+        <member name="M:uScript.API.Attributes.ScriptTypeExtensionAttribute.#ctor(System.Type)">
+            <summary>
+            Constructor used in attribute.
+            </summary>
+            <param name="extendedType">The type that you want to extend.</param>
+        </member>
+    </members>
+</doc>
