@@ -37,10 +37,10 @@
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Modules\uScript.Unturned\0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="Assembly-CSharp">
-          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\Assembly-CSharp.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Unturned\Unturned_Data\Managed\Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="com.rlabrecque.steamworks.net">
-          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Unturned\Unturned_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
         </Reference>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
@@ -50,7 +50,7 @@
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="uScript.API">
-          <HintPath>..\..\..\uScript2-Module-API\uScript.API.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Modules\uScript.Unturned\uScript.API.dll</HintPath>
         </Reference>
         <Reference Include="uScript.Core">
           <HintPath>..\..\..\uScript2-Module-API\uScript.Core-reference.dll</HintPath>

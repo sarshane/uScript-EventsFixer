@@ -54,7 +54,6 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Pathfinding.Ionic.Zip.Reduced.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Pathfinding.Poly2Tri.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Assembly-CSharp.xml
-C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.API.xml
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Core-reference.xml
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Unturned-reference.xml
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\SDG.NetPak.Runtime.xml
@@ -63,3 +62,4 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\obj\Release\uScript-EventsFixer.csproj.CopyComplete
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\obj\Release\uScript_EventsFixer.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\obj\Release\uScript_EventsFixer.pdb
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Unturned.LiveConfig.Runtime.dll
