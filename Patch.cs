@@ -23,8 +23,11 @@ namespace uScript_EventsFix
         public static class Patches
         {
             
-            public delegate void ExpUpdated(Player player, ref uint cost, bool isPositive , ref bool shouldAllow);
-            public static event ExpUpdated OnExperienceUpdatedFixed;
+            public delegate void ExpUpdated(Player player);
+            public static event ExpUpdated OnExperienceUpdated;
+            
+            public delegate void PreExpUpdated(Player player, ref uint cost, bool isPositive , ref bool shouldAllow);
+            public static event PreExpUpdated OnPreExperienceUpdated;
         
             public delegate void ItemEquipped(Player player, ItemJar item, ref bool shouldAllow);
             public static event ItemEquipped OnPlayerEquippedFixed;
@@ -32,32 +35,136 @@ namespace uScript_EventsFix
             public delegate void StanceUpdated(Player player, EPlayerStance newStance);
             public static event StanceUpdated OnPlayerStanceUpdatedFixed;
             
+            public delegate void ReceiveUpgradeRequestHandler (Player player, ref byte speciality, ref byte index, ref bool force, uint cost,  ref bool shouldAllow);
+            public static event ReceiveUpgradeRequestHandler OnPlayerSkillUpdated;
+            
 
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askSpend))]
             [HarmonyPrefix]
-            public static bool AskSpend(PlayerSkills __instance, ref uint cost)
+            public static bool askSpend(PlayerSkills __instance, ref uint cost)
             {
-                Debug.Log("AskSpend");
                 var shouldAllow = false;
-                OnExperienceUpdatedFixed?.Invoke(__instance.player, ref cost, false, ref shouldAllow);
+                OnPreExperienceUpdated?.Invoke(__instance.player, ref cost, false, ref shouldAllow);
                 return !shouldAllow;
             }
-
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askSpend))]
+            [HarmonyPostfix]
+            public static void askSpendPostfix(PlayerSkills __instance, uint cost)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askAward))]
             [HarmonyPrefix]
-            public static bool AskAward(PlayerSkills __instance, ref uint award)
+            public static bool askAward(PlayerSkills __instance, ref uint award)
             {
-                Debug.Log("AskAward");
                 var shouldAllow = false;
-                OnExperienceUpdatedFixed?.Invoke(__instance.player, ref award, true, ref shouldAllow);
+                OnPreExperienceUpdated?.Invoke(__instance.player, ref award, true, ref shouldAllow);
                 return !shouldAllow;
             }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askAward))]
+            [HarmonyPostfix]
+            public static void askAwardPostfix(PlayerSkills __instance, uint award)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askPay))]
+            [HarmonyPrefix]
+            public static bool askPay(PlayerSkills __instance, ref uint pay)
+            {
+                var shouldAllow = false;
+                OnPreExperienceUpdated?.Invoke(__instance.player, ref pay, true, ref shouldAllow);
+                return !shouldAllow;
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askPay))]
+            [HarmonyPostfix]
+            public static void askPayPostfix(PlayerSkills __instance, uint pay)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp))]
+            [HarmonyPrefix]
+            public static bool modXp(PlayerSkills __instance, ref uint xp)
+            {
+                var shouldAllow = false;
+                OnPreExperienceUpdated?.Invoke(__instance.player, ref xp, true, ref shouldAllow);
+                return !shouldAllow;
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp))]
+            [HarmonyPostfix]
+            public static void modXpPostfix(PlayerSkills __instance, uint xp)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp2))]
+            [HarmonyPrefix]
+            public static bool modXp2(PlayerSkills __instance, ref uint xp)
+            {
+                var shouldAllow = false;
+                OnPreExperienceUpdated?.Invoke(__instance.player, ref xp, false, ref shouldAllow);
+                return !shouldAllow;
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp2))]
+            [HarmonyPostfix]
+            public static void modXp2Postfix(PlayerSkills __instance, uint xp)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.ReceiveUpgradeRequest))]
+            [HarmonyPrefix]
+            public static bool ReceiveUpgradeRequest(PlayerSkills __instance, ref byte speciality, ref byte index, ref bool force)
+            {
+                var cost = __instance.cost(speciality, index);
+                var shouldAllow = false;
+                OnPlayerSkillUpdated?.Invoke(__instance.player, ref speciality, ref index, ref force, cost, ref shouldAllow);
+                return !shouldAllow;
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.ReceiveUpgradeRequest))]
+            [HarmonyPostfix]
+            public static void ReceiveUpgradeRequestPostfix(PlayerSkills __instance, byte speciality, byte index, bool force)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.ReceiveBoostRequest))]
+            [HarmonyPostfix]
+            public static void ReceiveUpgradeRequestPostfix(PlayerSkills __instance)
+            {
+                OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            
+            
 
             [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
             [HarmonyPrefix]
             public static bool ServerEquip(PlayerEquipment __instance, byte page, byte x, byte y)
             {
-                Debug.Log("ServerEquip");
+                
+                if (__instance.isBusy || !__instance.canEquip || __instance.player.life.isDead || __instance.player.stance.stance == EPlayerStance.CLIMB || __instance.player.stance.stance == EPlayerStance.DRIVING || __instance.HasValidUseable && !__instance.IsEquipAnimationFinished || __instance.isTurret)
+                    return true;
+                if ((int) page == (int) __instance.equippedPage && (int) x == (int) __instance.equipped_x && (int) y == (int) __instance.equipped_y || page == byte.MaxValue)
+                {
+                        return true;
+                }
+
+                if (page < (byte) 0 || (int) page >= (int) PlayerInventory.PAGES - 2)
+                    return true;
+                byte index = __instance.player.inventory.getIndex(page, x, y);
+                if (index == byte.MaxValue)
+                    return true;
+            
+            
                 var shouldAllow = false;
 
                 ItemJar jar =
@@ -68,12 +175,12 @@ namespace uScript_EventsFix
             }
 
 
-            [HarmonyPatch(typeof(PlayerStance), "checkStance", new[] {typeof(EPlayerStance), typeof(bool)})]
+                [HarmonyPatch(typeof(PlayerStance), "checkStance", new[] {typeof(EPlayerStance), typeof(bool)})]
             [HarmonyPrefix]
             public static bool OnPrePlayerChangedStanceInvoker(PlayerStance __instance, ref EPlayerStance newStance,
                 ref bool all)
             {
-                Debug.Log("CheckStance");
+                // Debug.Log("CheckStance");
                 var shouldAllow = true;
                 OnPlayerStanceUpdatedFixed?.Invoke(__instance.player, newStance);
                 return shouldAllow;
@@ -81,18 +188,48 @@ namespace uScript_EventsFix
         }
     }
     
-    [ScriptEvent("onPlayerExperienceUpdated", "player, *cost, isPositive, *cancel")]
-    public class ExperienceUpdatedFixed : ScriptEvent
+    [ScriptEvent("OnPlayerSkillUpdated", "player, *speciality, *index, *force, cost, *cancel")]
+    public class PlayerSkillUpdated : ScriptEvent
     {
         public override EventInfo EventHook(out object instance)
         {
             instance = null;
-            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedFixed", BindingFlags.Public | BindingFlags.Static)?.Name}");
-            return typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedFixed", BindingFlags.Public | BindingFlags.Static);
+            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnPlayerSkillUpdated", BindingFlags.Public | BindingFlags.Static)?.Name}");
+            return typeof(EventPatches.Patches).GetEvent("OnPlayerSkillUpdated", BindingFlags.Public | BindingFlags.Static);
         }
     
         [ScriptEventSubscription]
-        public void OnExperienceUpdated(Player player, ref uint cost, bool isPositive, ref bool shouldAllow)
+        public void OnPlayerSkillUpdated(Player player, ref byte speciality, ref byte index, ref bool force, uint cost,  ref bool shouldAllow)
+        {
+            var args = new ExpressionValue[]
+            {
+                ExpressionValue.CreateObject(new PlayerClass(player)),
+                speciality,
+                index,
+                force,
+                cost,
+                shouldAllow
+            };
+            RunEvent(this, args);
+            speciality = (byte) args[1];
+            index = (byte) args[2];
+            force = args[3];
+            shouldAllow = args[5];
+        }
+    }
+    
+    [ScriptEvent("onPrePlayerExperienceUpdated", "player, *cost, isPositive, *cancel")]
+    public class PreExperienceUpdated : ScriptEvent
+    {
+        public override EventInfo EventHook(out object instance)
+        {
+            instance = null;
+            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnPreExperienceUpdated", BindingFlags.Public | BindingFlags.Static)?.Name}");
+            return typeof(EventPatches.Patches).GetEvent("OnPreExperienceUpdated", BindingFlags.Public | BindingFlags.Static);
+        }
+    
+        [ScriptEventSubscription]
+        public void OnPreExperienceUpdated(Player player, ref uint cost, bool isPositive, ref bool shouldAllow)
         {
             var args = new ExpressionValue[]
             {
@@ -101,10 +238,34 @@ namespace uScript_EventsFix
                 isPositive,
                 shouldAllow
             };
-            
+            RunEvent(this, args);
+            shouldAllow = args[3];
+            cost = (uint) args[1];
+        }
+    }
+    
+    [ScriptEvent("onPlayerExperienceUpdated", "player")]
+    public class ExperienceUpdated : ScriptEvent
+    {
+        public override EventInfo EventHook(out object instance)
+        {
+            instance = null;
+            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnExperienceUpdated", BindingFlags.Public | BindingFlags.Static)?.Name}");
+            return typeof(EventPatches.Patches).GetEvent("OnExperienceUpdated", BindingFlags.Public | BindingFlags.Static);
+        }
+    
+        [ScriptEventSubscription]
+        public void OnExperienceUpdated(Player player)
+        {
+            var args = new ExpressionValue[]
+            {
+                ExpressionValue.CreateObject(new PlayerClass(player))
+            };
             RunEvent(this, args);
         }
     }
+    
+    
     
     [ScriptEvent("onPlayerEquipped", "player, item, *cancel")]
     public class ItemEquipped : ScriptEvent
