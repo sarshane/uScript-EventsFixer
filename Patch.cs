@@ -133,7 +133,7 @@ namespace uScript_EventsFix
             [HarmonyPostfix]
             public static void ReceiveUpgradeRequestPostfix(PlayerSkills __instance, byte speciality, byte index, bool force)
             {
-                OnExperienceUpdated?.Invoke(__instance.player);
+                 OnExperienceUpdated?.Invoke(__instance.player);
             }
             
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.ReceiveBoostRequest))]
@@ -141,6 +141,29 @@ namespace uScript_EventsFix
             public static void ReceiveUpgradeRequestPostfix(PlayerSkills __instance)
             {
                 OnExperienceUpdated?.Invoke(__instance.player);
+            }
+            
+            [HarmonyPatch(typeof(uScript.Module.Main.Events.VehicleDamagedEvent), nameof(uScript.Module.Main.Events.VehicleDamagedEvent.VehicleDamaged))]
+            [HarmonyPrefix]
+            public static bool VehicleDamagedEvent(ScriptEvent __instance, InteractableVehicle vehicle, Player player, EDamageOrigin cause, ref ushort damage, ref bool allow)
+            {
+                ExpressionValue[] args = new ExpressionValue[]
+                {
+                    (vehicle != null) ? ExpressionValue.CreateObject(new VehicleClass(vehicle)) : null,
+                    (player != null) ? ExpressionValue.CreateObject(new PlayerClass(player)) : null,
+                    (cause != null) ? cause.ToString() : null,
+                    (double)damage,
+                    !allow
+                };
+                
+                Type type = __instance.GetType();
+                MethodInfo methodInfo = type.GetMethod("RunEvent", BindingFlags.NonPublic | BindingFlags.Instance);
+                methodInfo?.Invoke(__instance, new object[] { __instance, args });
+                
+                damage = Convert.ToUInt16((double) args[3]);
+                allow = !args[4];
+
+                return false;
             }
             
             
@@ -175,7 +198,7 @@ namespace uScript_EventsFix
             }
 
 
-                [HarmonyPatch(typeof(PlayerStance), "checkStance", new[] {typeof(EPlayerStance), typeof(bool)})]
+            [HarmonyPatch(typeof(PlayerStance), "checkStance", new[] {typeof(EPlayerStance), typeof(bool)})]
             [HarmonyPrefix]
             public static bool OnPrePlayerChangedStanceInvoker(PlayerStance __instance, ref EPlayerStance newStance,
                 ref bool all)
@@ -185,6 +208,7 @@ namespace uScript_EventsFix
                 OnPlayerStanceUpdatedFixed?.Invoke(__instance.player, newStance);
                 return shouldAllow;
             }
+            
         }
     }
     

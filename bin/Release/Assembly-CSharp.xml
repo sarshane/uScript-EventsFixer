@@ -187,6 +187,12 @@
             Unfortunately the version which added hitmarker style saved but didn't actually load (sigh).
             </summary>
         </member>
+        <member name="F:SDG.Unturned.OptionsSettings.SAVEDATA_VERSION_RESET_VOICE_ALWAYS_RECORDING">
+            <summary>
+            Nelson 2023-12-28: this option was causing players to crash in the 3.23.14.0 update. Hopefully
+            it's resolved for the patch, but to be safe it will default to false.
+            </summary>
+        </member>
         <member name="M:SDG.Unturned.OptionsSettings.GetZoomBaseFieldOfView">
             <summary>
             Prior to 3.22.8.0 all scopes/optics had a base fov of 90 degrees.
@@ -911,7 +917,7 @@
         </member>
         <member name="M:SDG.Unturned.DedicatedWorkshopUpdateMonitorFactory.createDefaultForLevel(SDG.Unturned.LevelInfo)">
             <summary>
-            Create vanilla update monitor that watches for changes to workshop level file.
+            Create vanilla update monitor that watches for changes to workshop level file and any other mods.
             </summary>
         </member>
         <member name="M:SDG.Unturned.DedicatedWorkshopUpdateMonitorFactory.getCachedInitialTimestamp(Steamworks.PublishedFileId_t,System.UInt32@)">
@@ -1022,6 +1028,13 @@
         <member name="T:SDG.Unturned.MenuMapVisibility.HelperClass">
             <summary>
             Prevents static member from being initialized during MonoBehaviour construction. (Unity warning)
+            </summary>
+        </member>
+        <member name="T:SDG.Unturned.InteractableObjectTriggerableBase">
+            <summary>
+            Nelson 2024-02-06: when looking into resolving public issue #3703 I figured since there is a common behavior
+            between InteractableObjectQuest, InteractableObjectNote, and InteractableObjectDropper (in that they all
+            request the server to do X) we may as well support a "mod hook" that works with all three.
             </summary>
         </member>
         <member name="P:SDG.Unturned.ItemSightAsset.zoom">
@@ -3747,7 +3760,7 @@
             Holds tooltip text
             </summary>
         </member>
-        <member name="F:SDG.Unturned.PlayerVoice.COMPRESSED_VOICE_BUFFER">
+        <member name="F:SDG.Unturned.PlayerVoice.compressedVoiceBuffer">
             <summary>
             Speaker writes compressed audio to this buffer.
             Listener copies network buffer here for decompression.
@@ -5950,6 +5963,16 @@
             e.g. a value of zero will bounce back and forth for a long time (indefinitely?)
             </summary>
         </member>
+        <member name="T:SDG.Unturned.InteractableObjectQuestEventHook">
+            <summary>
+            Can be added to any GameObject with a Dropper, Note, or Quest interactable object in its parents.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.InteractableObjectQuestEventHook.OnUsed">
+            <summary>
+            Invoked on authority when interactable object is used successfully.
+            </summary>
+        </member>
         <member name="M:SDG.Unturned.ClaimManager.canBuildOnVehicle(UnityEngine.Transform,Steamworks.CSteamID,Steamworks.CSteamID)">
             <param name="isClaim">True if it's a new claim flag.</param>
         </member>
@@ -7853,11 +7876,6 @@
             Web URL to map feedback discussions.
             </summary>
         </member>
-        <member name="M:SDG.Unturned.LevelInfo.resolveAsset">
-            <summary>
-            Cache level's asset, if any.
-            </summary>
-        </member>
         <member name="M:SDG.Unturned.LevelInfo.GetPreviewImageFilePath">
             <summary>
             Preview.png should be 320x180
@@ -9692,6 +9710,11 @@
             Equivalent to the "armor" parameter of the legacy damage function.
             </summary>
         </member>
+        <member name="P:SDG.Unturned.DamageZombieParameters.AlertPosition">
+            <summary>
+            If not null and damage is applied, <see cref="M:SDG.Unturned.Zombie.alert(SDG.Unturned.Player)"/> is called with this position (startle: true).
+            </summary>
+        </member>
         <member name="P:SDG.Unturned.ObjectNPCAsset.playerKnowsNameFlagId">
             <summary>
             If non-zero, NPC name is shown as ??? until bool flag is true.
@@ -9726,7 +9749,7 @@
         </member>
         <member name="T:SDG.Unturned.DedicatedWorkshopUpdateMonitor">
             <summary>
-            If using a map from the workshop, this class monitors it for changes so the server can be restarted.
+            If using a map or mods from the workshop, this class monitors them for changes so the server can be restarted.
             </summary>
         </member>
         <member name="M:SDG.Unturned.DedicatedWorkshopUpdateMonitor.submitQueryRequest(Steamworks.PublishedFileId_t[])">
@@ -9918,6 +9941,17 @@
              add the Interactability_Remote flag to its asset to indicate only mod hooks should control it.
              </summary>
         </member>
+        <member name="F:SDG.Unturned.InteractableObjectBinaryStateEventHook.EListenServerHostMode.RequestAsClient">
+            <summary>
+            When a state change is requested in singleplayer it should be treated as if running as a client on a server.
+            This is the default to match behavior from before this option was added.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.InteractableObjectBinaryStateEventHook.EListenServerHostMode.OverrideState">
+            <summary>
+            When a state change is requested in singleplayer it should be treated as if running as a dedicated server.
+            </summary>
+        </member>
         <member name="F:SDG.Unturned.InteractableObjectBinaryStateEventHook.OnStateEnabled">
             <summary>
             Invoked when interactable object enters the Used / On / Enabled state.
@@ -9933,6 +9967,15 @@
             Should the OnStateEnabled and OnStateDisabled events be invoked when the object is loaded, becomes relevant
             in multiplayer, and is reset? True is useful when visuals need to be kept in sync with the state, whereas
             false is useful for transient interactions.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.InteractableObjectBinaryStateEventHook.ListenServerHostMode">
+            <summary>
+            Controls how state change requests are performed when running as both client and server ("listen server").
+            On the dedicated server, requesting a state change overrides the current state without processing NPC
+            conditions, whereas when a client requests a state change NPC conditions apply. This option fixes the
+            inconsistency in singleplayer of whether to treat as server or client. (public issue #4298)
+            At the time of writing (2024-01-29) listen server only applies to singleplayer.
             </summary>
         </member>
         <member name="M:SDG.Unturned.InteractableObjectBinaryStateEventHook.GotoEnabledState">
@@ -11283,6 +11326,11 @@
         <member name="F:SDG.Unturned.DamageAnimalParameters.applyGlobalArmorMultiplier">
             <summary>
             Should game mode config damage multiplier be factored in?
+            </summary>
+        </member>
+        <member name="P:SDG.Unturned.DamageAnimalParameters.AlertPosition">
+            <summary>
+            If not null and damage is applied, <see cref="M:SDG.Unturned.Animal.alertDamagedFromPoint(UnityEngine.Vector3)"/> is called with this position.
             </summary>
         </member>
         <member name="M:SDG.Unturned.SteamBBCodeUtils.removeYouTubePreviews(System.String@)">
@@ -12770,6 +12818,11 @@
         <member name="M:SDG.Unturned.UseableConsumeable.performUseOnSelf(SDG.Unturned.ItemConsumeableAsset)">
             <summary>
             Called by owner and server when using consumeable on self.
+            </summary>
+        </member>
+        <member name="F:SDG.Unturned.UseableMelee.playUseSoundTime">
+            <summary>
+            For non-repeat weapons the "Use" audio clip is played once time reaches this point.
             </summary>
         </member>
         <member name="M:SDG.Unturned.InteractableGenerator.updatePowerableIsWired(SDG.Unturned.InteractablePower,System.Boolean)">
