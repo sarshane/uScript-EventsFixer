@@ -6,10 +6,12 @@ using SDG.Unturned;
 using System.Reflection;
 using System.Reflection.Emit;
 using JetBrains.Annotations;
+using Steamworks;
 using UnityEngine;
 using uScript.API.Attributes;
 using uScript.Core;
 using uScript.Module.Main.Classes;
+using uScript.Module.Main.Events;
 using uScript.Unturned;
 
 namespace uScript_EventsFix
@@ -143,14 +145,13 @@ namespace uScript_EventsFix
                 OnExperienceUpdated?.Invoke(__instance.player);
             }
             
-            [HarmonyPatch(typeof(uScript.Module.Main.Events.VehicleDamagedEvent), nameof(uScript.Module.Main.Events.VehicleDamagedEvent.VehicleDamaged))]
+            [HarmonyPatch(typeof(VehicleDamagedEvent), nameof(uScript.Module.Main.Events.VehicleDamagedEvent.VehicleDamaged))]
             [HarmonyPrefix]
             public static bool VehicleDamagedEvent(ScriptEvent __instance, InteractableVehicle vehicle, Player player, EDamageOrigin cause, ref ushort damage, ref bool allow)
             {
-                ExpressionValue[] args = new ExpressionValue[]
-                {
-                    (vehicle != null) ? ExpressionValue.CreateObject(new VehicleClass(vehicle)) : null,
-                    (player != null) ? ExpressionValue.CreateObject(new PlayerClass(player)) : null,
+                ExpressionValue[] args = {
+                    (vehicle != null) ? ExpressionValue.CreateObject(new VehicleClass(vehicle)) : ExpressionValue.Null,
+                    (player != null) ? ExpressionValue.CreateObject(new PlayerClass(player)) : ExpressionValue.Null,
                     (cause != null) ? cause.ToString() : null,
                     (double)damage,
                     !allow
@@ -160,14 +161,20 @@ namespace uScript_EventsFix
                 MethodInfo methodInfo = type.GetMethod("RunEvent", BindingFlags.NonPublic | BindingFlags.Instance);
                 methodInfo?.Invoke(__instance, new object[] { __instance, args });
                 
+                
                 damage = Convert.ToUInt16((double) args[3]);
                 allow = !args[4];
 
                 return false;
             }
             
-            
-            
+            [HarmonyPatch(typeof(PlayerClass), nameof(PlayerClass.Arrested))]
+            [HarmonyPrefix]
+            public static bool Arrested(PlayerClass __instance, ref bool __result)
+            {
+                __result = __instance.Player.animator.captorID != CSteamID.Nil || __instance.Player.animator.captorStrength > 0;
+                return false;
+            }
 
             [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
             [HarmonyPrefix]
