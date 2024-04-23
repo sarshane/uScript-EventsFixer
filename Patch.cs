@@ -182,15 +182,13 @@ namespace uScript_EventsFix
             [HarmonyPrefix]
             public static bool NonQueryPatch(string query, params ExpressionValue[] prepareArgs)
             {
-                if (wait)
+                if (_wait)
                 {
-                    // Console.WriteLine($"NonQueryAsync skipped.");
-                    wait = false;
+                    _wait = false;
                     return true;
                 }
     
-                // Console.WriteLine($"NonQueryAsync: {query}");
-                wait = true;
+                _wait = true;
                 Task.Run(() => 
                 {
                     DatabaseModule.NonQuery(query, prepareArgs);
@@ -208,8 +206,8 @@ namespace uScript_EventsFix
                 __result = vFound == null ? null : new VehicleClass(vFound);
                 return false;
             }
-            
-            public static bool wait = false;
+
+            private static bool _wait = false;
 
             [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
             [HarmonyPrefix]
@@ -245,7 +243,6 @@ namespace uScript_EventsFix
             public static bool OnPrePlayerChangedStanceInvoker(PlayerStance __instance, ref EPlayerStance newStance,
                 ref bool all)
             {
-                // Debug.Log("CheckStance");
                 var shouldAllow = true;
                 OnPlayerStanceUpdatedFixed?.Invoke(__instance.player, newStance);
                 return shouldAllow;
