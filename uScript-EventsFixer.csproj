@@ -42,6 +42,9 @@
         <Reference Include="com.rlabrecque.steamworks.net">
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Unturned\Unturned_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
         </Reference>
+        <Reference Include="MySql.Data">
+          <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Modules\uScript.Unturned\MySql.Data.dll</HintPath>
+        </Reference>
         <Reference Include="Rocket.API">
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Modules\Rocket.Unturned\Rocket.API.dll</HintPath>
         </Reference>

@@ -5,6 +5,7 @@ using HarmonyLib;
 using SDG.Unturned;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Steamworks;
 using UnityEngine;
@@ -12,13 +13,14 @@ using uScript.API.Attributes;
 using uScript.Core;
 using uScript.Module.Main.Classes;
 using uScript.Module.Main.Events;
+using uScript.Module.Main.Modules;
 using uScript.Unturned;
 
 namespace uScript_EventsFix
 {
 
     public class EventPatches
-    {
+    {    
         
         [UsedImplicitly]
         [HarmonyPatch]
@@ -168,13 +170,46 @@ namespace uScript_EventsFix
                 return false;
             }
             
-            [HarmonyPatch(typeof(PlayerClass), nameof(PlayerClass.Arrested))]
+            [HarmonyPatch(typeof(PlayerClass), "get_Arrested")]
             [HarmonyPrefix]
             public static bool Arrested(PlayerClass __instance, ref bool __result)
             {
                 __result = __instance.Player.animator.captorID != CSteamID.Nil || __instance.Player.animator.captorStrength > 0;
                 return false;
             }
+            
+            [HarmonyPatch(typeof(DatabaseModule), nameof(DatabaseModule.NonQuery))]
+            [HarmonyPrefix]
+            public static bool NonQueryPatch(string query, params ExpressionValue[] prepareArgs)
+            {
+                if (wait)
+                {
+                    // Console.WriteLine($"NonQueryAsync skipped.");
+                    wait = false;
+                    return true;
+                }
+    
+                // Console.WriteLine($"NonQueryAsync: {query}");
+                wait = true;
+                Task.Run(() => 
+                {
+                    DatabaseModule.NonQuery(query, prepareArgs);
+                });
+    
+                return false;
+            }
+            
+            [HarmonyPatch(typeof(ServerModule), nameof(ServerModule.FindVehicle))]
+            [HarmonyPrefix]
+            public static bool FindVehicle(ref VehicleClass __result, uint instanceId)
+            {
+
+                InteractableVehicle vFound = VehicleManager.findVehicleByNetInstanceID(instanceId);
+                __result = vFound == null ? null : new VehicleClass(vFound);
+                return false;
+            }
+            
+            public static bool wait = false;
 
             [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
             [HarmonyPrefix]
@@ -218,7 +253,9 @@ namespace uScript_EventsFix
             
         }
     }
-    
+
+
+
     [ScriptEvent("OnPlayerSkillUpdated", "player, *speciality, *index, *force, cost, *cancel")]
     public class PlayerSkillUpdated : ScriptEvent
     {
@@ -353,9 +390,11 @@ namespace uScript_EventsFix
         
         protected override void OnModuleLoaded()
         {
-            Debug.Log("uScriptEventsFixer: Using Harmony...");
             
+            
+            Debug.Log("uScriptEventsFixer: Using Harmony...");
             var HarmonyInstance = new Harmony("uScript_EventsFixer");
+            
             Debug.Log("uScriptEventsFixer: Trying to Patch all methods...");
             HarmonyInstance.PatchAll();
             

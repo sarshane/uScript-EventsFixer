@@ -66,3 +66,6 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Rocket.API.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Rocket.Core.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Rocket.Unturned.dll
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\MySql.Data.dll
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Google.Protobuf.dll
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\BouncyCastle.Crypto.dll
