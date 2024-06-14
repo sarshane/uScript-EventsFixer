@@ -65,13 +65,13 @@
           <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Modules\uScript.Unturned\uScript.API.dll</HintPath>
         </Reference>
         <Reference Include="uScript.Core">
-          <HintPath>..\..\..\uScript2-Module-API\uScript.Core-reference.dll</HintPath>
+          <HintPath>..\..\..\..\..\Desktop\unturnedscript.com\uScript.Core.dll</HintPath>
         </Reference>
         <Reference Include="uScript.Module.Main">
-          <HintPath>..\..\..\uScript2-Module-API\uScript.Module.Main.dll</HintPath>
+          <HintPath>..\..\..\..\..\Desktop\unturnedscript.com\uScript.Module.Main.dll</HintPath>
         </Reference>
         <Reference Include="uScript.Unturned">
-          <HintPath>..\..\..\uScript2-Module-API\uScript.Unturned-reference.dll</HintPath>
+          <HintPath>..\..\..\..\..\Desktop\unturnedscript.com\uScript.Unturned.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>

@@ -5,9 +5,7 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\com.rlabrecque.steamworks.net.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\UnityEngine.CoreModule.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.API.dll
-C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Core-reference.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Module.Main.dll
-C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Unturned-reference.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\UnityEngine.PhysicsModule.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\SDG.NetTransport.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\SystemEx.dll
@@ -54,8 +52,6 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Pathfinding.Ionic.Zip.Reduced.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Pathfinding.Poly2Tri.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Assembly-CSharp.xml
-C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Core-reference.xml
-C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Unturned-reference.xml
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\SDG.NetPak.Runtime.xml
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\obj\Release\uScript-EventsFixer.csproj.AssemblyReference.cache
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\obj\Release\uScript-EventsFixer.csproj.CoreCompileInputs.cache
@@ -69,3 +65,5 @@ C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsF
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\MySql.Data.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\Google.Protobuf.dll
 C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\BouncyCastle.Crypto.dll
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Core.dll
+C:\Users\exm0r\Documents\uscipt\GitHubClones\uScript-EventsFixer\uScript-EventsFixer\bin\Release\uScript.Unturned.dll

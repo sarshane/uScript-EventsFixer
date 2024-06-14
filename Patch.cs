@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
-using SDG.Unturned;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
+using HarmonyLib;
 using JetBrains.Annotations;
+using SDG.Unturned;
 using Steamworks;
 using UnityEngine;
 using uScript.API.Attributes;
 using uScript.Core;
+using uScript.Module.Main;
 using uScript.Module.Main.Classes;
 using uScript.Module.Main.Events;
 using uScript.Module.Main.Modules;
@@ -19,8 +20,65 @@ using uScript.Unturned;
 namespace uScript_EventsFix
 {
 
+    [ScriptModule("databaseCallback")]
+    public class HudModuleEx
+    {
+        
+        [ScriptFunction("allRows")]
+        public static void AllRows(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
+        {
+            Task.Run(() => 
+            {
+                var data = DatabaseModule.AllRows(query, prepareArgs);
+                state.Call(callback, data);
+            });
+        }
+        
+        [ScriptFunction("firstRow")]
+        public static void FirstRow(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
+        {
+            Task.Run(() => 
+            {
+                var data = DatabaseModule.FirstRow(query, prepareArgs);
+                state.Call(callback, data);
+            });
+        }
+        
+        [ScriptFunction("scalar")]
+        public static void Scalar(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
+        {
+            Task.Run(() => 
+            {
+                var data = DatabaseModule.Scalar(query, prepareArgs);
+                state.Call(callback, data);
+            });
+        }
+        
+        [ScriptFunction("execute")]
+        public static void Execute(ScriptState state, string query, ExpressionValue callback)
+        {
+            Task.Run(() => 
+            {
+                var data = DatabaseModule.Execute(query);
+                state.Call(callback, data);
+            });
+        }
+        
+        [ScriptFunction("escape")]
+        public static void Escape(ScriptState state, string query, ExpressionValue callback)
+        {
+            Task.Run(() => 
+            {
+                var data = DatabaseModule.Escape(query);
+                state.Call(callback, data);
+            });
+        }
+
+    }
+
     public class EventPatches
     {    
+        
         
         [UsedImplicitly]
         [HarmonyPatch]
@@ -30,9 +88,11 @@ namespace uScript_EventsFix
             public delegate void ExpUpdated(Player player);
             public static event ExpUpdated OnExperienceUpdated;
             
+            
             public delegate void PreExpUpdated(Player player, ref uint cost, bool isPositive , ref bool shouldAllow);
             public static event PreExpUpdated OnPreExperienceUpdated;
-        
+            
+            
             public delegate void ItemEquipped(Player player, ItemJar item, ref bool shouldAllow);
             public static event ItemEquipped OnPlayerEquippedFixed;
 
@@ -56,6 +116,9 @@ namespace uScript_EventsFix
             [HarmonyPostfix]
             public static void askSpendPostfix(PlayerSkills __instance, uint cost)
             {
+                
+                
+                
                 OnExperienceUpdated?.Invoke(__instance.player);
             }
             
@@ -99,6 +162,9 @@ namespace uScript_EventsFix
                 OnPreExperienceUpdated?.Invoke(__instance.player, ref xp, true, ref shouldAllow);
                 return !shouldAllow;
             }
+            
+
+            
             
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp))]
             [HarmonyPostfix]
@@ -154,7 +220,7 @@ namespace uScript_EventsFix
                 ExpressionValue[] args = {
                     (vehicle != null) ? ExpressionValue.CreateObject(new VehicleClass(vehicle)) : ExpressionValue.Null,
                     (player != null) ? ExpressionValue.CreateObject(new PlayerClass(player)) : ExpressionValue.Null,
-                    (cause != null) ? cause.ToString() : null,
+                    cause.ToString(),
                     (double)damage,
                     !allow
                 };
@@ -177,6 +243,23 @@ namespace uScript_EventsFix
                 __result = __instance.Player.animator.captorID != CSteamID.Nil || __instance.Player.animator.captorStrength > 0;
                 return false;
             }
+            
+            [HarmonyPatch(typeof(SpawnerModule), "SpawnVehicle")]
+            [HarmonyPrefix]
+            public static bool SpawnVehicle(ref VehicleClass __result, ushort id, Vector3Class position, float angle)
+            {
+                if (!(Assets.find(EAssetType.VEHICLE, id) is VehicleAsset vehicleAsset))
+                {
+                    __result = null;
+                    return false;
+                }
+                
+                __result =  new VehicleClass(VehicleManager.spawnVehicleV2(id, position.Vector3, Quaternion.Euler(0f, angle, 0f)));
+                return false;
+            }
+            
+            
+            
             
             [HarmonyPatch(typeof(DatabaseModule), nameof(DatabaseModule.NonQuery))]
             [HarmonyPrefix]
@@ -207,7 +290,7 @@ namespace uScript_EventsFix
                 return false;
             }
 
-            private static bool _wait = false;
+            private static bool _wait;
 
             [HarmonyPatch(typeof(PlayerEquipment), nameof(PlayerEquipment.ServerEquip))]
             [HarmonyPrefix]
@@ -216,12 +299,12 @@ namespace uScript_EventsFix
                 
                 if (__instance.isBusy || !__instance.canEquip || __instance.player.life.isDead || __instance.player.stance.stance == EPlayerStance.CLIMB || __instance.player.stance.stance == EPlayerStance.DRIVING || __instance.HasValidUseable && !__instance.IsEquipAnimationFinished || __instance.isTurret)
                     return true;
-                if ((int) page == (int) __instance.equippedPage && (int) x == (int) __instance.equipped_x && (int) y == (int) __instance.equipped_y || page == byte.MaxValue)
+                if (page == __instance.equippedPage && x == __instance.equipped_x && y == __instance.equipped_y || page == byte.MaxValue)
                 {
                         return true;
                 }
 
-                if (page < (byte) 0 || (int) page >= (int) PlayerInventory.PAGES - 2)
+                if (page < 0 || page >= PlayerInventory.PAGES - 2)
                     return true;
                 byte index = __instance.player.inventory.getIndex(page, x, y);
                 if (index == byte.MaxValue)
@@ -238,14 +321,13 @@ namespace uScript_EventsFix
             }
 
 
-            [HarmonyPatch(typeof(PlayerStance), "checkStance", new[] {typeof(EPlayerStance), typeof(bool)})]
+            [HarmonyPatch(typeof(PlayerStance), "checkStance", typeof(EPlayerStance), typeof(bool))]
             [HarmonyPrefix]
             public static bool OnPrePlayerChangedStanceInvoker(PlayerStance __instance, ref EPlayerStance newStance,
                 ref bool all)
             {
-                var shouldAllow = true;
                 OnPlayerStanceUpdatedFixed?.Invoke(__instance.player, newStance);
-                return shouldAllow;
+                return true;
             }
             
         }
@@ -309,6 +391,8 @@ namespace uScript_EventsFix
         }
     }
     
+
+    
     [ScriptEvent("onPlayerExperienceUpdated", "player")]
     public class ExperienceUpdated : ScriptEvent
     {
@@ -322,7 +406,7 @@ namespace uScript_EventsFix
         [ScriptEventSubscription]
         public void OnExperienceUpdated(Player player)
         {
-            var args = new ExpressionValue[]
+            var args = new[]
             {
                 ExpressionValue.CreateObject(new PlayerClass(player))
             };
@@ -399,16 +483,16 @@ namespace uScript_EventsFix
             Debug.Log("uScriptEventsFixer: Patched methods list:");
             foreach (var patch in HarmonyInstance.GetPatchedMethods())
             {
-                Debug.Log($"uScriptEventsFixer: Patched: {patch.Name}, {patch.ToString()}");
+                Debug.Log($"uScriptEventsFixer: Patched: {patch.Name}, {patch}");
             }
             
             
             Debug.Log("uScriptEventsFixer: Disabling bugged events...");
             
             MethodInfo transpilerMethod = new Func<IEnumerable<CodeInstruction>, IEnumerable<CodeInstruction>>(Transpiler).Method;
-            HarmonyInstance.Patch(typeof(uScript.Module.Main.PlayerEvents).GetMethod("Awake",
+            HarmonyInstance.Patch(typeof(PlayerEvents).GetMethod("Awake",
                 BindingFlags.Instance | BindingFlags.NonPublic), transpiler: new HarmonyMethod(transpilerMethod));
-            IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> old) => new CodeInstruction[] { new CodeInstruction(OpCodes.Ret) }.Concat(old);
+            IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> old) => new[] { new CodeInstruction(OpCodes.Ret) }.Concat(old);
             Debug.LogWarning("uScript bugged events are successfully fixed!");
         }
     }
