@@ -16,6 +16,7 @@ using uScript.Module.Main.Classes;
 using uScript.Module.Main.Events;
 using uScript.Module.Main.Modules;
 using uScript.Unturned;
+using Logger = Rocket.Core.Logging.Logger;
 
 namespace uScript_EventsFix
 {
@@ -27,50 +28,165 @@ namespace uScript_EventsFix
         [ScriptFunction("allRows")]
         public static void AllRows(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
         {
+            var databaseArguments = ExpressionValue.Array().AsList;
+            var callbackFunctionArguments = ExpressionValue.Array().AsList;
+            var isContinueFound = false;
+            foreach (var t in prepareArgs)
+            {
+                if (!isContinueFound)
+                {
+                    if (t == "CONTINUE_CALLBACK")
+                    {
+                        isContinueFound = true;
+                        continue;
+                    }
+
+                    databaseArguments.Add(t);
+                    continue;
+                }
+
+                callbackFunctionArguments.Add(t);
+            }
+
             Task.Run(() => 
             {
-                var data = DatabaseModule.AllRows(query, prepareArgs);
-                state.Call(callback, data);
+                var data = DatabaseModule.AllRows(query, databaseArguments.ToArray());
+                if (!isContinueFound)
+                {
+                    state.Call(callback, data);
+                    return;
+                }
+
+                var callbackFunctionArgumentsWithData = ExpressionValue.Array().AsList;
+                callbackFunctionArgumentsWithData.Add(data);
+                foreach (var item in callbackFunctionArguments)
+                {
+                    callbackFunctionArgumentsWithData.Add(item);
+                }
+
+                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
         [ScriptFunction("firstRow")]
         public static void FirstRow(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
         {
+            var databaseArguments = ExpressionValue.Array().AsList;
+            var callbackFunctionArguments = ExpressionValue.Array().AsList;
+            var isContinueFound = false;
+            foreach (var t in prepareArgs)
+            {
+                if (!isContinueFound)
+                {
+                    if (t == "CONTINUE_CALLBACK")
+                    {
+                        isContinueFound = true;
+                        continue;
+                    }
+
+                    databaseArguments.Add(t);
+                    continue;
+                }
+
+                callbackFunctionArguments.Add(t);
+            }
+
             Task.Run(() => 
             {
-                var data = DatabaseModule.FirstRow(query, prepareArgs);
-                state.Call(callback, data);
+                var data = DatabaseModule.FirstRow(query, databaseArguments.ToArray());
+                if (!isContinueFound)
+                {
+                    state.Call(callback, data);
+                    return;
+                }
+
+                var callbackFunctionArgumentsWithData = ExpressionValue.Array().AsList;
+                callbackFunctionArgumentsWithData.Add(data);
+                foreach (var item in callbackFunctionArguments)
+                {
+                    callbackFunctionArgumentsWithData.Add(item);
+                }
+
+                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
         [ScriptFunction("scalar")]
         public static void Scalar(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
         {
+            var databaseArguments = ExpressionValue.Array().AsList;
+            var callbackFunctionArguments = ExpressionValue.Array().AsList;
+            var isContinueFound = false;
+            foreach (var t in prepareArgs)
+            {
+                if (!isContinueFound)
+                {
+                    if (t == "CONTINUE_CALLBACK")
+                    {
+                        isContinueFound = true;
+                        continue;
+                    }
+
+                    databaseArguments.Add(t);
+                    continue;
+                }
+
+                callbackFunctionArguments.Add(t);
+            }
+
             Task.Run(() => 
             {
-                var data = DatabaseModule.Scalar(query, prepareArgs);
-                state.Call(callback, data);
+                var data = DatabaseModule.Scalar(query, databaseArguments.ToArray());
+                if (!isContinueFound)
+                {
+                    state.Call(callback, data);
+                    return;
+                }
+
+                var callbackFunctionArgumentsWithData = ExpressionValue.Array().AsList;
+                callbackFunctionArgumentsWithData.Add(data);
+                foreach (var item in callbackFunctionArguments)
+                {
+                    callbackFunctionArgumentsWithData.Add(item);
+                }
+
+                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
         [ScriptFunction("execute")]
-        public static void Execute(ScriptState state, string query, ExpressionValue callback)
+        public static void Execute(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
         {
             Task.Run(() => 
             {
-                var data = DatabaseModule.Execute(query);
-                state.Call(callback, data);
+                var data = DatabaseModule.Execute(query);                
+                var callbackFunctionArgumentsWithData = ExpressionValue.Array().AsList;
+                callbackFunctionArgumentsWithData.Add(data);
+                foreach (var item in prepareArgs)
+                {
+                    callbackFunctionArgumentsWithData.Add(item);
+                }
+
+                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
         [ScriptFunction("escape")]
-        public static void Escape(ScriptState state, string query, ExpressionValue callback)
+        public static void Escape(ScriptState state, string query, ExpressionValue callback, params ExpressionValue[] prepareArgs)
         {
             Task.Run(() => 
             {
                 var data = DatabaseModule.Escape(query);
-                state.Call(callback, data);
+                
+                var callbackFunctionArgumentsWithData = ExpressionValue.Array().AsList;
+                callbackFunctionArgumentsWithData.Add(data);
+                foreach (var item in prepareArgs)
+                {
+                    callbackFunctionArgumentsWithData.Add(item);
+                }
+
+                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                
             });
         }
 
@@ -87,6 +203,12 @@ namespace uScript_EventsFix
             
             public delegate void ExpUpdated(Player player);
             public static event ExpUpdated OnExperienceUpdated;
+            
+            public delegate void ExpUpdatedN(Player player, uint award);
+            public static event ExpUpdatedN OnExperienceUpdatedNaturally;
+            
+            public delegate void ExpUpdatedNN(Player player, uint award);
+            public static event ExpUpdatedNN OnExperienceUpdatedNotNaturally;
             
             
             public delegate void PreExpUpdated(Player player, ref uint cost, bool isPositive , ref bool shouldAllow);
@@ -136,6 +258,7 @@ namespace uScript_EventsFix
             public static void askAwardPostfix(PlayerSkills __instance, uint award)
             {
                 OnExperienceUpdated?.Invoke(__instance.player);
+                OnExperienceUpdatedNotNaturally?.Invoke(__instance.player, award);
             }
             
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.askPay))]
@@ -152,6 +275,7 @@ namespace uScript_EventsFix
             public static void askPayPostfix(PlayerSkills __instance, uint pay)
             {
                 OnExperienceUpdated?.Invoke(__instance.player);
+                OnExperienceUpdatedNaturally?.Invoke(__instance.player, pay);
             }
             
             [HarmonyPatch(typeof(PlayerSkills), nameof(PlayerSkills.modXp))]
@@ -244,22 +368,56 @@ namespace uScript_EventsFix
                 return false;
             }
             
+            [HarmonyPatch(typeof(VehicleClass), "get_Name")]
+            [HarmonyPrefix]
+            public static bool getVehicleName(VehicleClass __instance, ref string __result)
+            {
+                __result = __instance.Vehicle.asset.vehicleName;
+                return false;
+            }
+            
             [HarmonyPatch(typeof(SpawnerModule), "SpawnVehicle")]
             [HarmonyPrefix]
             public static bool SpawnVehicle(ref VehicleClass __result, ushort id, Vector3Class position, float angle)
             {
-                if (!(Assets.find(EAssetType.VEHICLE, id) is VehicleAsset vehicleAsset))
+
+                var text = id.ToString();
+                Asset asset = (Guid.TryParse(text, out var result) ? Assets.find(result) : ((!ushort.TryParse(text, out var result2)) ? FindByString(text) : Assets.find(EAssetType.VEHICLE, result2)));
+                if (asset == null)
                 {
                     __result = null;
                     return false;
                 }
                 
-                __result =  new VehicleClass(VehicleManager.spawnVehicleV2(id, position.Vector3, Quaternion.Euler(0f, angle, 0f)));
+                __result =  new VehicleClass(VehicleManager.spawnVehicleV2(asset, position.Vector3, Quaternion.Euler(0f, angle, 0f)));
                 return false;
             }
             
             
-            
+            public static Asset FindByString(string input)
+            {
+                input = input.Trim();
+                if (string.IsNullOrEmpty(input))
+                {
+                    return null;
+                }
+
+                var list = new List<VehicleAsset>();
+                Assets.find(list);
+
+                foreach (VehicleAsset item in list)
+                {
+                    if (string.Equals(input, item.name, StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(input, item.vehicleName, StringComparison.InvariantCultureIgnoreCase) ||
+                        item.name.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        item.vehicleName.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return item;
+                    }
+                }
+
+                return null;
+            }
             
             [HarmonyPatch(typeof(DatabaseModule), nameof(DatabaseModule.NonQuery))]
             [HarmonyPrefix]
@@ -409,6 +567,50 @@ namespace uScript_EventsFix
             var args = new[]
             {
                 ExpressionValue.CreateObject(new PlayerClass(player))
+            };
+            RunEvent(this, args);
+        }
+    }
+    
+    [ScriptEvent("onPlayerExperienceUpdatedNaturally", "player, award")]
+    public class PlayerExperienceUpdatedNaturally : ScriptEvent
+    {
+        public override EventInfo EventHook(out object instance)
+        {
+            instance = null;
+            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedNaturally", BindingFlags.Public | BindingFlags.Static)?.Name}");
+            return typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedNaturally", BindingFlags.Public | BindingFlags.Static);
+        }
+    
+        [ScriptEventSubscription]
+        public void OnExperienceUpdated(Player player, uint award)
+        {
+            var args = new[]
+            {
+                ExpressionValue.CreateObject(new PlayerClass(player)),
+                award
+            };
+            RunEvent(this, args);
+        }
+    }
+    
+    [ScriptEvent("onPlayerExperienceUpdatedNotNaturally", "player, award")]
+    public class PlayerExperienceUpdatedNotNaturally : ScriptEvent
+    {
+        public override EventInfo EventHook(out object instance)
+        {
+            instance = null;
+            Debug.Log($"Event info: {typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedNotNaturally", BindingFlags.Public | BindingFlags.Static)?.Name}");
+            return typeof(EventPatches.Patches).GetEvent("OnExperienceUpdatedNotNaturally", BindingFlags.Public | BindingFlags.Static);
+        }
+    
+        [ScriptEventSubscription]
+        public void OnExperienceUpdated(Player player, uint award)
+        {
+            var args = new[]
+            {
+                ExpressionValue.CreateObject(new PlayerClass(player)),
+                award
             };
             RunEvent(this, args);
         }
