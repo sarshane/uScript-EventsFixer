@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
+using Rocket.Core.Utils;
 using SDG.Unturned;
 using Steamworks;
 using UnityEngine;
@@ -17,9 +18,28 @@ using uScript.Module.Main.Events;
 using uScript.Module.Main.Modules;
 using uScript.Unturned;
 using Logger = Rocket.Core.Logging.Logger;
+using Object = System.Object;
 
 namespace uScript_EventsFix
 {
+
+    [ScriptTypeExtension(typeof(BarricadeClass))]
+    public static class BarricadeClassFixing
+    {
+
+
+        [ScriptFunction("getDoor")]
+        public static DoorClass getDoor([ScriptInstance] ExpressionValue instance)
+        {
+            if (!(instance.Data is BarricadeClass barricade)) return null;
+            
+            InteractableDoor component = barricade.BarricadeTransform.GetComponent<InteractableDoor>();
+            if (component != null) return new DoorClass(component);
+            component = barricade.BarricadeTransform.GetComponentInParent<InteractableDoor>();
+            return component == null ? null : new DoorClass(component);
+        }
+
+    }
 
     [ScriptModule("databaseCallback")]
     public class HudModuleEx
@@ -53,7 +73,7 @@ namespace uScript_EventsFix
                 var data = DatabaseModule.AllRows(query, databaseArguments.ToArray());
                 if (!isContinueFound)
                 {
-                    state.Call(callback, data);
+                    CallOnMainThread(state ,callback, data);
                     return;
                 }
 
@@ -64,7 +84,16 @@ namespace uScript_EventsFix
                     callbackFunctionArgumentsWithData.Add(item);
                 }
 
-                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                CallOnMainThread(state ,callback, callbackFunctionArgumentsWithData.ToArray());
+                
+            });
+        }
+
+        private static void CallOnMainThread(ScriptState state, ExpressionValue f, params ExpressionValue[] a)
+        {
+            TaskDispatcher.QueueOnMainThread(() =>
+            {
+                state.Call(f, a);
             });
         }
         
@@ -96,7 +125,7 @@ namespace uScript_EventsFix
                 var data = DatabaseModule.FirstRow(query, databaseArguments.ToArray());
                 if (!isContinueFound)
                 {
-                    state.Call(callback, data);
+                    CallOnMainThread(state ,callback, data);
                     return;
                 }
 
@@ -107,7 +136,7 @@ namespace uScript_EventsFix
                     callbackFunctionArgumentsWithData.Add(item);
                 }
 
-                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                CallOnMainThread(state ,callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
@@ -139,7 +168,7 @@ namespace uScript_EventsFix
                 var data = DatabaseModule.Scalar(query, databaseArguments.ToArray());
                 if (!isContinueFound)
                 {
-                    state.Call(callback, data);
+                    CallOnMainThread(state ,callback, data);
                     return;
                 }
 
@@ -150,7 +179,7 @@ namespace uScript_EventsFix
                     callbackFunctionArgumentsWithData.Add(item);
                 }
 
-                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                CallOnMainThread(state ,callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
@@ -167,7 +196,7 @@ namespace uScript_EventsFix
                     callbackFunctionArgumentsWithData.Add(item);
                 }
 
-                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                CallOnMainThread(state ,callback, callbackFunctionArgumentsWithData.ToArray());
             });
         }
         
@@ -185,7 +214,7 @@ namespace uScript_EventsFix
                     callbackFunctionArgumentsWithData.Add(item);
                 }
 
-                state.Call(callback, callbackFunctionArgumentsWithData.ToArray());
+                CallOnMainThread(state ,callback, callbackFunctionArgumentsWithData.ToArray());
                 
             });
         }
@@ -359,6 +388,7 @@ namespace uScript_EventsFix
 
                 return false;
             }
+            
             
             [HarmonyPatch(typeof(PlayerClass), "get_Arrested")]
             [HarmonyPrefix]
